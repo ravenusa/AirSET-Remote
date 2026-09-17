@@ -38,11 +38,12 @@ Sistem AirSET terbagi menjadi beberapa komponen modular:
 - Penamaan komputer (Hostname) dan pengaturan Workgroup secara terprogram tanpa limitasi NetBIOS.
 - Pengaturan User Password Windows dan konfigurasi Sysinternals-grade Auto-Logon (Bypass login screen saat booting namun tetap meminta password jika manual Lock/Sign Out).
 
-### 2. Disk Shield Protection (DeepFry / UWF & Deep Freeze)
-- Integrasi penuh dengan Windows Unified Write Filter (UWF) dan Deep Freeze.
+### 2. Disk Shield Protection (DeepFry / UWF)
+- Integrasi penuh dengan Windows Unified Write Filter (UWF).
 - Alokasi Dynamic DISK Overlay cerdas: mengkalkulasi kuota overlay berdasarkan persentase fisik kapasitas drive sistem C: dengan pengaman batas ruang kosong (Safety Guard).
 - Pengaturan threshold peringatan (Warning) dan batas kritis (Critical) otomatis.
 - Skrip pembersihan exclusion berbahaya dan pencegahan BSOD fast-startup.
+- Reference from https://github.com/GPadaka19/DeepFry
 
 ### 3. Distribusi dan Pengumpulan Tugas (File Manager)
 - Distribusi Berkas Massal: Membagikan materi praktikum, installer, atau dokumen ke seluruh PC client secara serentak dengan throttled streaming.
