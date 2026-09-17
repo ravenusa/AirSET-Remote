@@ -38,47 +38,8 @@ namespace devIPsett
         }
     }
 
-    public static class SecurityHelper
-    {
-        private static readonly string SecretPasscode = "R4veNuZ4&7166777";
-
-        public static string DecryptString(string encryptedBase64)
-        {
-            try
-            {
-                byte[] fullCipher = Convert.FromBase64String(encryptedBase64);
-                byte[] key = SHA256.Create().ComputeHash(Encoding.UTF8.GetBytes(SecretPasscode));
-
-                byte[] iv = new byte[16];
-                byte[] cipherText = new byte[fullCipher.Length - 16];
-
-                Array.Copy(fullCipher, 0, iv, 0, 16);
-                Array.Copy(fullCipher, 16, cipherText, 0, cipherText.Length);
-
-                using (Aes aes = Aes.Create())
-                {
-                    aes.Key = key;
-                    aes.IV = iv;
-                    using (ICryptoTransform decryptor = aes.CreateDecryptor(aes.Key, aes.IV))
-                    {
-                        byte[] decryptedBytes = decryptor.TransformFinalBlock(cipherText, 0, cipherText.Length);
-                        return Encoding.UTF8.GetString(decryptedBytes);
-                    }
-                }
-            }
-            catch
-            {
-                return string.Empty;
-            }
-        }
-    }
-
     public static class LabData
     {
-        // Enkripsi AES-256 Gist ID dan Token dengan garam "R4veNuZ4&7166777"
-        private const string ENC_GIST_ID = "kQd8p/4qY7+WJ6pP9/Fq93h/p90i1T4/mXm17M/57iY5R8gY4n+F8Q6gHk5rL+tV9j+A4uXp1d="; 
-        private const string ENC_GIST_TOKEN = "v1nB8X9oY2a+b3c4d5e6f7g8h9i0j1k2l3m4n5o6p7q8r9s0t1u2v3w4x5y6z7a8b9c0d1e2f3=";
-
         private static string cachedGistId = null;
         private static string cachedGistToken = null;
 

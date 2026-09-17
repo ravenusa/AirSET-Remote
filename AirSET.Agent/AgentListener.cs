@@ -114,6 +114,8 @@ namespace AirSET.Agent
             }
         }
 
+        private static readonly SemaphoreSlim _tcpConcurrencyLimiter = new SemaphoreSlim(32, 32);
+
         private async Task ListenTcpCommands(CancellationToken token)
         {
             try
@@ -124,7 +126,24 @@ namespace AirSET.Agent
                 while (!token.IsCancellationRequested)
                 {
                     TcpClient client = await tcpListener.AcceptTcpClientAsync();
-                    _ = Task.Run(() => HandleClientCommand(client));
+                    if (!await _tcpConcurrencyLimiter.WaitAsync(100, token))
+                    {
+                        // Batas konkurensi (32 koneksi aktif) terlampaui, tolak koneksi berlebih
+                        try { client.Close(); } catch { }
+                        continue;
+                    }
+
+                    _ = Task.Run(async () =>
+                    {
+                        try
+                        {
+                            await HandleClientCommand(client);
+                        }
+                        finally
+                        {
+                            _tcpConcurrencyLimiter.Release();
+                        }
+                    });
                 }
             }
             catch (Exception ex)
@@ -140,6 +159,10 @@ namespace AirSET.Agent
             {
                 try
                 {
+                    // Atur socket timeout 30 detik untuk mencegah koneksi menggantung menahan slot
+                    client.ReceiveTimeout = 30000;
+                    client.SendTimeout = 30000;
+
                     // Baca 4 byte length prefix terlebih dahulu
                     byte[] lengthBuffer = new byte[4];
                     int totalLengthBytes = 0;
@@ -150,36 +173,36 @@ namespace AirSET.Agent
                         totalLengthBytes += read;
                     }
 
-                    string rawCipher = string.Empty;
-                    if (totalLengthBytes == 4)
+                    if (totalLengthBytes < 4)
                     {
-                        int payloadLength = BitConverter.ToInt32(lengthBuffer, 0);
-                        if (payloadLength > 0 && payloadLength < 500 * 1024 * 1024) // Dukung hingga 500MB untuk transfer file besar
-                        {
-                            byte[] payloadBuffer = new byte[payloadLength];
-                            int totalPayloadBytes = 0;
-                            while (totalPayloadBytes < payloadLength)
-                            {
-                                int toRead = Math.Min(65536, payloadLength - totalPayloadBytes);
-                                int read = await stream.ReadAsync(payloadBuffer, totalPayloadBytes, toRead);
-                                if (read <= 0) break;
-                                totalPayloadBytes += read;
-                            }
-                            if (totalPayloadBytes == payloadLength)
-                            {
-                                rawCipher = Encoding.UTF8.GetString(payloadBuffer, 0, payloadLength);
-                            }
-                        }
+                        return; // Koneksi ditutup sebelum length-prefix diterima
                     }
 
-                    // Fallback jika dikirim tanpa length-prefix (misal raw stream)
-                    if (string.IsNullOrEmpty(rawCipher))
+                    int payloadLength = BitConverter.ToInt32(lengthBuffer, 0);
+                    // Batasi payload maksimum yang diizinkan (maksimal 500MB untuk transfer file besar)
+                    if (payloadLength <= 0 || payloadLength > 500 * 1024 * 1024)
                     {
-                        byte[] fallbackBuffer = new byte[8192];
-                        int fallbackBytes = await stream.ReadAsync(fallbackBuffer, 0, fallbackBuffer.Length);
-                        if (fallbackBytes > 0)
+                        Log(string.Format("Koneksi ditolak: ukuran payload tidak valid ({0} bytes)", payloadLength));
+                        return;
+                    }
+
+                    string rawCipher = string.Empty;
+                    using (var ms = new MemoryStream())
+                    {
+                        byte[] buffer = new byte[65536]; // Buffer tetap 64 KB
+                        int bytesRemaining = payloadLength;
+                        while (bytesRemaining > 0)
                         {
-                            rawCipher = Encoding.UTF8.GetString(fallbackBuffer, 0, fallbackBytes);
+                            int toRead = Math.Min(buffer.Length, bytesRemaining);
+                            int read = await stream.ReadAsync(buffer, 0, toRead);
+                            if (read <= 0) break;
+                            ms.Write(buffer, 0, read);
+                            bytesRemaining -= read;
+                        }
+
+                        if (ms.Length == payloadLength)
+                        {
+                            rawCipher = Encoding.UTF8.GetString(ms.ToArray());
                         }
                     }
 

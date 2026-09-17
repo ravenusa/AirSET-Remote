@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Threading;
 using System.Windows.Forms;
 
@@ -68,16 +68,20 @@ namespace AirSET.Controller
 
             try
             {
-                // Verifikasi Otorisasi Komputer Controller:
-                // Hanya boleh dijalankan pada komputer dengan Hostname 'Komputer-presentasi'
-                // ATAU memiliki IP address berakhiran .90 (misal 10.22.1.90, 10.23.3.90, 10.73.1.90, dll)
-                if (!IsAuthorizedControllerMachine())
+                // Pembatasan hak akses Controller ditegakkan lewat autentikasi login (PasswordAuthManager),
+                // bukan lewat identitas mesin/IP yang mudah dipalsukan.
+
+                // Validasi keberadaan kunci enkripsi sebelum membuka aplikasi
+                string secretKey = Environment.GetEnvironmentVariable("AIRSET_SECRET_KEY");
+                if (string.IsNullOrWhiteSpace(secretKey))
                 {
                     MessageBox.Show(
-                        "Akses ditolak! Komputer ini tidak memenuhi syarat untuk membuka aplikasi.",
-                        "Keamanan AirSET Controller",
+                        "Environment variable 'AIRSET_SECRET_KEY' belum disetel pada sistem ini.\n\n" +
+                        "Silakan setel environment variable 'AIRSET_SECRET_KEY' di Windows sebelum menjalankan Controller.\n" +
+                        "Pastikan kunci yang sama juga digunakan pada seluruh PC Agent.",
+                        "Kunci Enkripsi Belum Dikonfigurasi",
                         MessageBoxButtons.OK,
-                        MessageBoxIcon.Stop
+                        MessageBoxIcon.Warning
                     );
                     return;
                 }
@@ -90,40 +94,6 @@ namespace AirSET.Controller
             {
                 MessageBox.Show("Error saat memuat aplikasi:\n" + ex.ToString(), "Startup Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
-        }
-
-        private static bool IsAuthorizedControllerMachine()
-        {
-            string hostName = System.Net.Dns.GetHostName();
-            if (string.Equals(hostName, "Komputer-presentasi", StringComparison.OrdinalIgnoreCase))
-            {
-                return true;
-            }
-
-            try
-            {
-                foreach (var ni in System.Net.NetworkInformation.NetworkInterface.GetAllNetworkInterfaces())
-                {
-                    if (ni.OperationalStatus == System.Net.NetworkInformation.OperationalStatus.Up &&
-                        ni.NetworkInterfaceType != System.Net.NetworkInformation.NetworkInterfaceType.Loopback)
-                    {
-                        foreach (var u in ni.GetIPProperties().UnicastAddresses)
-                        {
-                            if (u.Address.AddressFamily == System.Net.Sockets.AddressFamily.InterNetwork)
-                            {
-                                string ipStr = u.Address.ToString();
-                                if (ipStr.EndsWith(".90"))
-                                {
-                                    return true;
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-            catch { }
-
-            return false;
         }
     }
 }

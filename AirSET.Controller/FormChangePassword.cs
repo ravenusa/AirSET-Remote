@@ -39,9 +39,9 @@ namespace AirSET.Controller
                 return;
             }
 
-            if (newPass.Length < 4)
+            if (newPass.Length < 8)
             {
-                MessageBox.Show("Password baru minimal 4 karakter!", "Peringatan", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                MessageBox.Show("Password baru minimal 8 karakter!", "Peringatan", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 txtNewPassword.Focus();
                 return;
             }

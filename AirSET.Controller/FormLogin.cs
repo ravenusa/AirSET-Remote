@@ -50,9 +50,9 @@ namespace AirSET.Controller
                     MessageBox.Show("Password tidak boleh kosong!", "Peringatan", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                     return;
                 }
-                if (password.Length < 4)
+                if (password.Length < 8)
                 {
-                    MessageBox.Show("Password minimal 4 karakter!", "Peringatan", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                    MessageBox.Show("Password minimal 8 karakter!", "Peringatan", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                     return;
                 }
                 if (password != confirm)

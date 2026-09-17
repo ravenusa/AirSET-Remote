@@ -47,6 +47,21 @@ namespace AirSET.Agent
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
 
+            // Validasi kunci enkripsi wajib disetel sebelum Agent berjalan
+            string secretKey = Environment.GetEnvironmentVariable("AIRSET_SECRET_KEY");
+            if (string.IsNullOrWhiteSpace(secretKey))
+            {
+                MessageBox.Show(
+                    "Environment variable 'AIRSET_SECRET_KEY' belum disetel pada komputer client ini.\n\n" +
+                    "Agent tidak dapat berkomunikasi secara aman tanpa kunci enkripsi bersama.\n" +
+                    "Silakan setel environment variable 'AIRSET_SECRET_KEY' pada sistem.",
+                    "AirSET Agent - Kunci Belum Dikonfigurasi",
+                    MessageBoxButtons.OK,
+                    MessageBoxIcon.Warning
+                );
+                return;
+            }
+
             string[] cmdArgs = Environment.GetCommandLineArgs();
             bool isWatchdog = cmdArgs.Length > 1 && cmdArgs[1].Equals("--watchdog", StringComparison.OrdinalIgnoreCase);
 

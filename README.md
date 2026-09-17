@@ -1,4 +1,4 @@
-﻿# AirSET v2.0 - Automated Infrastructure & Remote System Management
+# AirSET v2.0 - Automated Infrastructure & Remote System Management
 
 AirSET (Automated Infrastructure & Remote System Management) adalah solusi manajemen laboratorium komputer terpadu berbasis .NET C# WinForms. Sistem ini dirancang untuk mengotomatisasi konfigurasi jaringan, sinkronisasi profil lab, kontrol sistem terpusat, proteksi disk (Unified Write Filter), distribusi dan pengumpulan berkas tugas siswa, live remote monitoring, serta manajemen inventaris perangkat keras dan perangkat lunak secara massal di jaringan lokal (LAN).
 
@@ -65,10 +65,15 @@ Sistem AirSET terbagi menjadi beberapa komponen modular:
 
 ## Keamanan dan Enkripsi
 
-- Komunikasi Jaringan: Seluruh payload instruksi antara Controller dan Agent dienkripsi menggunakan standar AES-256 bit dengan Initial Vector (IV) dinamis.
-- Environment Variable Support:
-  - `AIRSET_SECRET_KEY`: Kunci sandi enkripsi komunikasi jaringan.
-  - `AIRSET_GIST_TOKEN` & `AIRSET_GIST_ID`: Kredensial sinkronisasi profil lab custom via GitHub Gist.
+- Komunikasi Jaringan: Seluruh payload instruksi antara Controller dan Agent dienkripsi menggunakan standar AES-256-CBC dengan skema Encrypt-then-MAC (HMAC-SHA256), derivasi kunci PBKDF2 (100.000 iterasi), serta verifikasi integritas waktu-konstan (constant-time verification).
+- Environment Variable (Kunci Bersama):
+  - `AIRSET_SECRET_KEY` (**WAJIB**): Kunci sandi rahasia bersama. Controller dan seluruh PC Agent **harus menggunakan nilai yang sama persis**. Jika tidak disetel, Controller dan Agent akan menolak berjalan demi mencegah remote command execution tak terotorisasi.
+  - `AIRSET_GIST_TOKEN` & `AIRSET_GIST_ID` (Opsional): Kredensial sinkronisasi profil lab custom via GitHub Gist.
+- Kompatibilitas Versi:
+  - Karena pembaruan skema enkripsi integritas (PBKDF2 + HMAC-SHA256), Host Controller dan seluruh Client Agent versi baru **harus di-deploy secara serentak**.
+- Penyimpanan Password Controller:
+  - Password Controller disimpan menggunakan hash PBKDF2 (100.000 iterasi) dengan salt acak 16-byte unik per instalasi (format file auth.dat v2).
+  - Keterbatasan yang Diketahui: Menghapus file auth.dat secara lokal akan memicu alur inisialisasi password baru (first-run). Oleh karena itu, keamanan master password Controller bergantung pada pembatasan akses fisik dan hak Administrator di komputer Controller.
 
 ---
 
