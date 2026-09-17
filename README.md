@@ -1,6 +1,6 @@
 ﻿# AirSET v2.0 - Automated Infrastructure & Remote System Management
 
-AirSET (Automated Infrastructure & Remote System Management) adalah solusi manajemen laboratorium komputer terpadu berbasis .NET C# WinForms. Sistem ini dirancang untuk mengotomatisasi konfigurasi jaringan, sinkronisasi profil lab, kontrol sistem terpusat, proteksi disk (Unified Write Filter & Deep Freeze), distribusi dan pengumpulan berkas tugas siswa, live remote monitoring, serta manajemen inventaris perangkat keras dan perangkat lunak secara massal di jaringan lokal (LAN).
+AirSET (Automated Infrastructure & Remote System Management) adalah solusi manajemen laboratorium komputer terpadu berbasis .NET C# WinForms. Sistem ini dirancang untuk mengotomatisasi konfigurasi jaringan, sinkronisasi profil lab, kontrol sistem terpusat, proteksi disk (Unified Write Filter), distribusi dan pengumpulan berkas tugas siswa, live remote monitoring, serta manajemen inventaris perangkat keras dan perangkat lunak secara massal di jaringan lokal (LAN).
 
 ---
 
