@@ -1,0 +1,7 @@
+<Solution>
+  <Folder Name="/Solution Items/" />
+  <Project Path="devIPsett.csproj" Id="819a9da2-1688-4d23-9954-221e1d5d0cff" />
+  <Project Path="AirSET.Core\AirSET.Core.csproj" />
+  <Project Path="AirSET.Controller\AirSET.Controller.csproj" />
+  <Project Path="AirSET.Agent\AirSET.Agent.csproj" />
+</Solution>
