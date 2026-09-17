@@ -1,4 +1,4 @@
-﻿# AirSET v2.0 - Automated Infrastructure & Remote System Management
+# AirSET v2.0 - Automated Infrastructure & Remote System Management
 
 AirSET (Automated Infrastructure & Remote System Management) adalah solusi manajemen laboratorium komputer terpadu berbasis .NET C# WinForms. Sistem ini dirancang untuk mengotomatisasi konfigurasi jaringan, sinkronisasi profil lab, kontrol sistem terpusat, proteksi disk (Unified Write Filter), distribusi dan pengumpulan berkas tugas siswa, live remote monitoring, serta manajemen inventaris perangkat keras dan perangkat lunak secara massal di jaringan lokal (LAN).
 
@@ -54,7 +54,7 @@ Sistem AirSET terbagi menjadi beberapa komponen modular:
 - Live Screen Monitoring: Pratinjau tangkapan layar berkala seluruh PC client di dashboard.
 - Remote Control & Input Injection: Kontrol mouse dan keyboard jarak jauh secara real-time.
 - Kunci Layar Interaktif (Interactive Lock Screen): Mengunci tampilan dan input perangkat client saat sesi ujian atau penjelasan dosen.
-- Power Management: Pengiriman Wake-on-LAN (Magic Packet), Reboot massal, dan Shutdown massal.
+- Power Management: Pengiriman Wake-on-LAN, Reboot massal, dan Shutdown massal.
 
 ### 5. Audit Inventaris Hardware dan Software
 - Pengumpulan spesifikasi perangkat keras (Processor, Total RAM, GPU, Model Motherboard, Disk Storage, MAC Address).
@@ -77,6 +77,43 @@ Sistem AirSET terbagi menjadi beberapa komponen modular:
 - Sistem Operasi: Windows 7 / 8 / 10 / 11 (32-bit dan 64-bit).
 - Framework: .NET Framework 4.8 atau lebih baru.
 - Hak Akses: Administrator (Run as Administrator) diperlukan untuk modifikasi konfigurasi kartu jaringan, registry, dan driver UWF.
+
+---
+
+## Panduan Build dan Deployment (TODO List)
+
+### Tahap 1: Kompilasi Solusi (Build Application)
+1. Buka Terminal / Developer PowerShell pada direktori proyek.
+2. Jalankan perintah kompilasi mode Release:
+   ```cmd
+   dotnet build devIPsett.slnx -c Release
+   ```
+3. Pastikan proses build menghasilkan `0 Error(s)`. Berkas output eksekusi akan tersedia di:
+   - Host Controller: `AirSET.Controller\bin\Release\AirSET.Controller.exe`
+   - Client Agent: `AirSET.Agent\bin\Release\AirSET.Agent.exe`
+   - Standalone Tool: `bin\Release\AirSET.exe`
+
+### Tahap 2: Deployment di Komputer Client (PC Siswa)
+1. Salin berkas `AirSET.Agent.exe` ke direktori lokal di PC client (contoh: `C:\ProgramData\AirSET\` atau `C:\AirSET\`).
+2. Jalankan `AirSET.Agent.exe` dengan hak akses Administrator (Klik kanan -> Run as administrator).
+3. Agent akan secara otomatis:
+   - Mendaftarkan entri Windows Task Scheduler (`AirSETAgent` dan `AirSETWatchdog`).
+   - Mengonfigurasi proteksi folder di `C:\ProgramData\AirSET\`.
+   - Mengizinkan lalu lintas TCP port 3623 pada Windows Firewall.
+   - Menampilkan ikon indikator pada system tray.
+
+### Tahap 3: Deployment di Komputer Host (PC Dosen / Laboran)
+1. Salin berkas `AirSET.Controller.exe` ke komputer instruktur/host.
+2. Jalankan `AirSET.Controller.exe` dengan hak akses Administrator (Run as administrator).
+3. Buat password master aplikasi saat jendela form pertama kali terbuka.
+4. Masuk ke Dashboard Manajemen AirSET.
+
+### Tahap 4: Pengoperasian Harian Laboratorium
+1. **Pemindaian PC Client:** Pada tab Konfigurasi Jaringan & PC, jalankan Scan Otomatis (Auto) untuk mendeteksi seluruh client yang aktif.
+2. **Penerapan Konfigurasi Massal:** Pilih profil lab, tentukan nomor komputer, dan kirim konfigurasi (IP, Hostname, Workgroup, Password, Auto-Logon).
+3. **Proteksi Sistem (Freeze):** Buka tab DeepFry (UWF), pilih PC target, dan jalankan Lock Disk (Freeze) untuk mengaktifkan proteksi Dynamic DISK Overlay.
+4. **Distribusi & Penarikan Berkas:** Gunakan tab File Manager untuk membagikan materi ujian/tugas dan menarik tugas siswa secara massal ke Host Controller.
+5. **Monitoring & Kontrol Daya:** Pantau layar siswa secara real-time via tab Power & Desktop, gunakan fitur Kunci Layar saat penyampaian materi, dan kirim perintah Shutdown/Reboot serentak di akhir jam praktikum.
 
 ---
 
@@ -110,21 +147,6 @@ git-uploadv2/
 |-- devIPsett.slnx              # File Solusi Visual Studio
 +-- .gitignore                  # Filter pengecualian berkas build dan berkas lokal
 ```
-
----
-
-## Panduan Kompilasi
-
-Buka command prompt / terminal developer dan jalankan:
-
-```cmd
-dotnet build devIPsett.slnx -c Release
-```
-
-Berkas output eksekusi akan tersedia di folder:
-- `AirSET.Controller\bin\Release\AirSET.Controller.exe`
-- `AirSET.Agent\bin\Release\AirSET.Agent.exe`
-- `bin\Release\AirSET.exe`
 
 ---
 
